@@ -2,7 +2,7 @@
 
 A reproducible, config-driven pipeline for querying [TCGA](https://portal.gdc.cancer.gov/) through the GDC API, caching harmonised multi-omics data locally, and running differential analyses across any two groups you can define — gene expression (DESeq2), somatic mutations (maftools), DNA methylation (limma), copy number, and miRNA.
 
-The point is to go from *"I want to compare X vs Y in this tumour type"* to a folder of publication-ready figures, result tables and an HTML report, in one command, with the exact parameters recorded next to the output.
+
 
 ```bash
 make conda-env && conda activate tcga-omics        # all dependencies, one command
