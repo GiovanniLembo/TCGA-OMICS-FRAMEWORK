@@ -20,8 +20,12 @@ opt <- parse_args(OptionParser(option_list = list(
 if (is.null(opt$config)) stop("--config is required", call. = FALSE)
 
 cfg   <- load_config(opt$config)
-steps <- if (is.null(opt$only)) c("explore", "rnaseq", "mutation", "methylation", "cnv", "mirna")
-         else trimws(strsplit(opt$only, ",")[[1]])
+
+steps <- if (is.null(opt$only)) {
+  c("explore", "rnaseq", "mutation", "methylation", "cnv", "mirna")
+} else {
+  trimws(strsplit(opt$only, ",")[[1]])
+}
 
 log_step("run: ", cfg$contrast_name)
 data <- fetch_all(cfg, force = isTRUE(opt$`force-download`))
