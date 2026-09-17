@@ -1,0 +1,20 @@
+# data and outputs - never commit these
+cache/
+results/
+GDCdata/
+*.rds
+*.maf
+*.tsv.gz
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+renv/library/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

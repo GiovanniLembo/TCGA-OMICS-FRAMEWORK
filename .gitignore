@@ -1,0 +1,72 @@
+# data and outputs - never commit these
+cache/
+results/
+GDCdata/
+*.rds
+*.maf
+*.tsv.gz
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+renv/library/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Conda environments
+.conda/
+conda-env/
+env/
+venv/
+.venv/
+
+# Downloaded data and analysis outputs
+data/
+results/
+output/
+outputs/
+logs/
+tmp/
+cache/
+
+# Large genomics files
+*.bam
+*.bai
+*.cram
+*.crai
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+*.vcf.gz
+*.maf.gz
+*.rds
+*.RData
+
+# Credentials and secrets
+.env
+*.pem
+*.key
+credentials*
+token*
+
+# R
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Operating systems
+.DS_Store
+Thumbs.db

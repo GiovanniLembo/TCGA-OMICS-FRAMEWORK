@@ -1,0 +1,58 @@
+# Conda environment for the TCGA omics framework.
+#
+#   conda env create -f environment.yml     # or: mamba env create -f environment.yml
+#   conda activate tcga-omics
+#   make run CONFIG=config/brca_tumor_vs_normal.yml
+#
+# Using conda means you do not have to install system libraries (libcurl,
+# libxml2, fontconfig, ...) by hand, which is where a plain install.packages()
+# run usually fails on Linux and macOS.
+#
+# Solving this environment with plain conda can take a long time because of the
+# size of the Bioconductor dependency graph. mamba (or `conda install -n base
+# conda-libmamba-solver` and `--solver=libmamba`) resolves it in a fraction of
+# the time.
+
+name: tcga-omics
+
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+
+dependencies:
+  # --- base -----------------------------------------------------------------
+  - r-base=4.3
+  - pandoc
+
+  # --- CRAN -----------------------------------------------------------------
+  - r-yaml
+  - r-optparse
+  - r-ggplot2
+  - r-ggrepel
+  - r-scales
+  - r-matrixstats
+  - r-r.utils
+  - r-ashr
+
+  # --- Bioconductor core ----------------------------------------------------
+  - bioconductor-tcgabiolinks
+  - bioconductor-summarizedexperiment
+  - bioconductor-s4vectors
+  - bioconductor-genomicranges
+  - bioconductor-iranges
+
+  # --- analysis modules -----------------------------------------------------
+  - bioconductor-deseq2
+  - bioconductor-apeglm
+  - bioconductor-limma
+  - bioconductor-maftools
+
+  # --- optional: functional enrichment --------------------------------------
+  # Comment these two out for a much faster solve if you do not need
+  # run_enrichment: true
+  - bioconductor-clusterprofiler
+  - bioconductor-org.hs.eg.db
+
+  # --- optional: hidden batch-effect detection (deseq2$auto_sva: true) ------
+  - bioconductor-sva

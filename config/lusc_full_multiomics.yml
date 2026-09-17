@@ -1,0 +1,61 @@
+# ---------------------------------------------------------------------------
+# TCGA-LUSC: the full stack. Every layer enabled, tumour vs adjacent normal.
+#
+# This is the config that produces the complete report: expression, mutations,
+# methylation, copy number and miRNA, all on the same cohort definition.
+# Expect a long first run (download-bound) and a fast second one (cache-bound).
+#
+#   Rscript scripts/01_fetch_data.R  --config config/lusc_full_multiomics.yml
+#   Rscript scripts/02_run_analysis.R --config config/lusc_full_multiomics.yml
+#
+# To iterate on one layer only:
+#   Rscript scripts/02_run_analysis.R --config config/lusc_full_multiomics.yml --only cnv
+# ---------------------------------------------------------------------------
+
+project: TCGA-LUSC
+
+omics:
+  rnaseq: true
+  mutation: true
+  methylation: true
+  cnv: true
+  mirna: true
+
+cohort:
+  group_by: tissue_class
+  treatment: tumor
+  reference: normal
+  paired: false
+  min_group_n: 5
+
+deseq2:
+  assay: unstranded
+  min_count: 10
+  protein_coding_only: true
+  alpha: 0.05
+  lfc_threshold: 1
+  shrink: true
+  run_enrichment: true
+
+mutation:
+  compare_groups: false   # tumour-only calls: no variants in the normal arm
+
+methylation:
+  drop_sex_chr: true
+  delta_beta: 0.2
+
+cnv:
+  ploidy_correct: true    # ASCAT3 gives absolute CN; correct for aneuploidy
+  gain_ratio: 1.4
+  amp_ratio: 2.0
+  loss_ratio: 0.6
+  min_freq: 0.05
+  top_genes: 25
+  correlate_expression: true   # needs the rnaseq step in the same run
+
+mirna:
+  min_count: 10
+  alpha: 0.05
+  lfc_threshold: 1
+
+seed: 1234

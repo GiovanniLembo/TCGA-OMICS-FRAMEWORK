@@ -1,0 +1,47 @@
+# ---------------------------------------------------------------------------
+# TCGA-LUAD: early vs late stage, adjusted for sex, with the methylation layer
+# switched on so the expression and epigenetic results can be integrated.
+#
+# Expect this run to be slow and memory-hungry: the 450k matrix is ~485k probes
+# x ~500 samples. Run scripts/01_fetch_data.R once, then iterate on the
+# analysis using the cache.
+# ---------------------------------------------------------------------------
+
+project: TCGA-LUAD
+
+omics:
+  rnaseq: true
+  mutation: true
+  methylation: true
+
+cohort:
+  group_by: clin_ajcc_pathologic_stage
+  treatment: "Stage IV"
+  reference: "Stage I"
+  min_group_n: 5
+  filters:
+    tissue_class: [tumor]
+
+deseq2:
+  assay: unstranded
+  min_count: 10
+  protein_coding_only: true
+  covariates: [clin_gender]   # adjust for sex; add more at your own df cost
+  alpha: 0.05
+  lfc_threshold: 0.5          # stage effects are subtler than tumour vs normal
+  shrink: true
+  run_enrichment: true
+
+mutation:
+  top_genes: 25
+  min_mut: 5
+  compare_groups: true
+
+methylation:
+  drop_sex_chr: true
+  max_na_fraction: 0.1
+  p_adjust: 0.05
+  delta_beta: 0.1
+  top_n_heatmap: 50
+
+seed: 1234

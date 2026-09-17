@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  syntax:
+    name: parse + lint R sources
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+
+      - name: Parse every R file
+        run: |
+          Rscript -e '
+            files <- list.files(c("R", "scripts", "install"), pattern = "[.]R$", full.names = TRUE)
+            bad <- character(0)
+            for (f in files) {
+              p <- tryCatch(parse(f), error = function(e) e)
+              if (inherits(p, "error")) { bad <- c(bad, paste(f, conditionMessage(p))); cat("FAIL", f, "\n") }
+              else cat("ok  ", f, "\n")
+            }
+            if (length(bad)) stop(paste(bad, collapse = "\n"))
+          '
+
+      - name: Validate example configs
+        run: |
+          Rscript -e '
+            install.packages("yaml", repos = "https://cloud.r-project.org")
+            for (f in list.files("config", pattern = "[.]ya?ml$", full.names = TRUE)) {
+              cfg <- yaml::read_yaml(f)
+              stopifnot(!is.null(cfg$project), !is.null(cfg$cohort$treatment), !is.null(cfg$cohort$reference))
+              cat("ok  ", f, "\n")
+            }
+          '

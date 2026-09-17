@@ -1,0 +1,51 @@
+# ---------------------------------------------------------------------------
+# TCGA-BRCA: tumour vs normal, with explicit batch handling.
+#
+# TCGA samples were collected across dozens of Tissue Source Sites (TSS) and
+# processed on many plates, over years. Neither is biological. This config
+# shows the two supported ways to deal with it:
+#
+#   1. Add a KNOWN batch proxy as a covariate. tss / plate / center are
+#      parsed automatically from every barcode (see R/utils.R) - no extra
+#      download needed, just list them here. The framework checks each one
+#      for confounding with the contrast and drops it (with a warning) if a
+#      level only exists on one side - a confounded covariate cannot be
+#      adjusted for, only worked around by filtering the cohort.
+#
+#   2. If you don't trust the known batch labels, or the real source of
+#      variation isn't tss/plate/center at all, auto_sva estimates hidden
+#      batch structure directly from the count matrix with SVA and adds it
+#      as SV1..SVn ahead of the group term. Needs the 'sva' package
+#      (install/install_dependencies.R --optional, or environment.yml).
+#
+# Run `Rscript scripts/00_explore_projects.R --project TCGA-BRCA` first -
+# it now prints exactly this confounding check for tss/plate/center against
+# tumour vs normal, before you download anything.
+# ---------------------------------------------------------------------------
+
+project: TCGA-BRCA
+
+omics:
+  rnaseq: true
+  mutation: false
+  methylation: false
+
+cohort:
+  group_by: tissue_class
+  treatment: tumor
+  reference: normal
+  paired: false
+  min_group_n: 3
+
+deseq2:
+  assay: unstranded
+  min_count: 10
+  protein_coding_only: true
+  covariates: [tss]        # known batch proxy; dropped automatically if confounded
+  auto_sva: false           # set true to additionally estimate hidden batch effects
+  # n_sv: 2                 # force a specific number of surrogate variables instead of auto-estimating
+  alpha: 0.05
+  lfc_threshold: 1
+  shrink: true
+
+seed: 1234

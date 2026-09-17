@@ -1,0 +1,51 @@
+# ---------------------------------------------------------------------------
+# TCGA-BRCA: primary tumour vs adjacent solid tissue normal.
+#
+# The canonical sanity-check contrast. With ~1100 tumours and ~110 normals the
+# signal is enormous, which makes it a good first run to verify the install.
+# ---------------------------------------------------------------------------
+
+project: TCGA-BRCA
+
+cache_dir: cache
+results_dir: results
+
+omics:
+  rnaseq: true
+  mutation: true
+  methylation: false      # set to true only if you have ~16 GB RAM free
+
+cohort:
+  group_by: tissue_class  # derived from the barcode: tumor / normal / control
+  treatment: tumor        # numerator  -> positive log2FC = higher in tumour
+  reference: normal       # denominator
+  paired: false           # true = only patients with BOTH samples, ~blocked design
+  min_group_n: 3
+  drop_duplicate_aliquots: true
+  # filters:              # optional, any column of the sample annotation
+  #   clin_gender: [female]
+
+deseq2:
+  assay: unstranded       # raw integer counts - never use tpm_/fpkm_ assays here
+  min_count: 10
+  protein_coding_only: true
+  alpha: 0.05
+  lfc_threshold: 1
+  shrink: true
+  top_n_heatmap: 50
+  run_enrichment: false   # needs clusterProfiler + org.Hs.eg.db
+  # covariates: [clin_gender]
+
+mutation:
+  top_genes: 25
+  min_mut: 5
+  compare_groups: false   # tumour-only calls: a tumour/normal contrast is not meaningful
+
+methylation:
+  drop_sex_chr: true
+  max_na_fraction: 0.1
+  p_adjust: 0.05
+  delta_beta: 0.2
+  top_n_heatmap: 50
+
+seed: 1234
