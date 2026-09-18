@@ -113,7 +113,8 @@ scan_annotation <- function(avail, clinical = NULL, subtypes = NULL) {
     center       = long$center,
     stringsAsFactors = FALSE
   )
-  join_patient_tables(ann, clin_ = clinical, subtype_ = subtypes)
+  ann <- join_patient_tables(ann, clin_ = clinical, subtype_ = subtypes)
+  flatten_list_columns(ann)
 }
 
 #' One row per (grouping variable, level): how many samples and patients
@@ -209,6 +210,7 @@ explore_project <- function(cfg, avail = NULL, se = NULL, sample_annotation = NU
     need_pkg("SummarizedExperiment")
     cd <- as.data.frame(SummarizedExperiment::colData(se))
   }
+  if (!is.null(cd)) cd <- flatten_list_columns(cd)
 
   if (!is.null(cd)) {
     write_table(cd, file.path(tab, "sample_annotation.tsv"))

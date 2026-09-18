@@ -37,14 +37,63 @@ fetch_omic <- function(cfg, omic, force = FALSE, files_per_chunk = 20) {
   obj <- try(TCGAbiolinks::GDCprepare(q, directory = gdc_dir, summarizedExperiment = TRUE),
              silent = TRUE)
   if (inherits(obj, "try-error")) {
-    log_warn("GDCprepare failed for ", omic, ": ", as.character(obj))
-    return(NULL)
+    if (omic == "mutation") {
+      log_warn("GDCprepare failed for mutation (a known TCGAbiolinks issue: some per-case MAF ",
+               "files have a column that is entirely NA - parsed as logical - while others have ",
+               "real values there - parsed as character - and dplyr::bind_rows() refuses to merge ",
+               "the two): ", as.character(obj))
+      log_msg("falling back to a manual, type-tolerant merge of the already-downloaded MAF files")
+      obj <- try(merge_maf_files_manually(q, gdc_dir), silent = TRUE)
+    }
+    if (inherits(obj, "try-error")) {
+      log_warn("GDCprepare failed for ", omic, ": ", as.character(obj))
+      return(NULL)
+    }
   }
 
   obj <- annotate_object(obj, omic)
   saveRDS(obj, rds)
   log_ok("cached ", omic, " -> ", rds)
   obj
+}
+
+#' Fallback for the mutation branch of fetch_omic() when
+#' TCGAbiolinks::GDCprepare() fails to merge the per-case MAF files.
+#'
+#' Reads every downloaded MAF directly with every column forced to
+#' character - which sidesteps the type-mismatch entirely, since nothing
+#' about "all NA in file A, real strings in file B" survives once both are
+#' read as text - then re-casts the handful of columns callers actually use
+#' numerically (position, depth) back to numeric afterwards.
+#'
+#' @param query the GDCquery used for the download (for getResults(), unused
+#'   beyond locating the right files via `directory`)
+#' @param directory the GDCdownload directory passed to fetch_omic()
+#' @return data.frame, in the same shape GDCprepare(mutation) would return
+merge_maf_files_manually <- function(query, directory) {
+  need_pkg("data.table")
+  files <- list.files(directory, pattern = "\\.maf\\.gz$|\\.maf$", recursive = TRUE, full.names = TRUE)
+  if (length(files) == 0) log_die("no downloaded MAF files found under ", directory)
+  log_msg(sprintf("merging %d MAF files manually", length(files)))
+
+  read_one <- function(f) {
+    d <- try(data.table::fread(f, sep = "\t", header = TRUE, skip = "Hugo_Symbol",
+                               colClasses = "character", showProgress = FALSE), silent = TRUE)
+    if (inherits(d, "try-error") || is.null(d) || nrow(d) == 0) return(NULL)
+    d
+  }
+  parts <- Filter(Negate(is.null), lapply(files, read_one))
+  if (length(parts) == 0) log_die("every downloaded MAF file failed to parse")
+  merged <- data.table::rbindlist(parts, fill = TRUE, use.names = TRUE)
+
+  num_cols <- intersect(c("Start_Position", "End_Position", "t_depth", "t_ref_count",
+                          "t_alt_count", "n_depth", "n_ref_count", "n_alt_count"),
+                        names(merged))
+  for (cc in num_cols) merged[[cc]] <- suppressWarnings(as.numeric(merged[[cc]]))
+
+  out <- as.data.frame(merged, stringsAsFactors = FALSE)
+  log_ok(sprintf("manual merge: %d variants across %d files", nrow(out), length(parts)))
+  out
 }
 
 #' Add barcode-derived columns that we rely on downstream.
@@ -95,14 +144,37 @@ fetch_clinical <- function(cfg, force = FALSE) {
   log_step("fetching clinical metadata for ", cfg$project)
   cl <- try(TCGAbiolinks::GDCquery_clinic(project = cfg$project, type = "clinical"),
             silent = TRUE)
+
   if (inherits(cl, "try-error")) {
-    log_warn("clinical download failed: ", as.character(cl))
+    log_warn("GDCquery_clinic() failed (a known TCGAbiolinks issue: it merges the patient table ",
+             "with the drug/radiation/follow-up tables, which can have a different number of rows ",
+             "per patient, and the merge sometimes breaks on that mismatch): ", as.character(cl))
+    log_msg("falling back to the patient-level clinical sheet only (BCR XML) - this skips the ",
+           "multi-row drug/radiation/follow-up tables that are usually the cause")
+    cl <- try(fetch_clinical_patient_only(cfg), silent = TRUE)
+  }
+  if (inherits(cl, "try-error") || is.null(cl) || nrow(cl) == 0) {
+    log_warn("clinical download failed entirely: ",
+             if (inherits(cl, "try-error")) as.character(cl) else "no rows returned")
     return(NULL)
   }
-  cl$patient <- cl$submitter_id
+  cl$patient <- cl$submitter_id %||% cl$bcr_patient_barcode
   saveRDS(cl, rds)
   log_ok("cached clinical -> ", rds)
   cl
+}
+
+#' Fallback for fetch_clinical(): the single-row-per-patient BCR XML sheet
+#' only. Loses the richer fields GDCquery_clinic() would otherwise add
+#' (treatments, precise days_to_death, ...) but keeps what a cohort
+#' contrast actually needs - stage, gender, age, vital status - without the
+#' sub-tables whose row-count mismatch usually breaks the combined query.
+fetch_clinical_patient_only <- function(cfg) {
+  q <- TCGAbiolinks::GDCquery(project = cfg$project, data.category = "Clinical",
+                              data.type = "Clinical Supplement", data.format = "BCR XML")
+  gdc_dir <- ensure_dir(file.path(cfg$cache_dir, "GDCdata"))
+  TCGAbiolinks::GDCdownload(q, directory = gdc_dir)
+  TCGAbiolinks::GDCprepare_clinic(q, clinical.info = "patient", directory = gdc_dir)
 }
 
 #' Published molecular subtypes curated by TCGAbiolinks (PAM50, CMS, ...).

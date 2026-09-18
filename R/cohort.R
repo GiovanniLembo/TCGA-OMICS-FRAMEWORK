@@ -15,6 +15,7 @@ annotate_colData <- function(se, clinical = NULL, subtypes = NULL) {
   cd <- as.data.frame(SummarizedExperiment::colData(se))
   cd$patient <- cd$patient %||% tcga_patient(rownames(cd))
   cd <- join_patient_tables(cd, clin_ = clinical, subtype_ = subtypes)
+  cd <- flatten_list_columns(cd)
   SummarizedExperiment::colData(se) <- S4Vectors::DataFrame(cd, row.names = rownames(cd))
   se
 }

@@ -98,10 +98,34 @@ dedup_aliquots <- function(barcodes) {
 
 write_table <- function(x, path, ...) {
   ensure_dir(dirname(path))
-  utils::write.table(as.data.frame(x), file = path, sep = "\t",
+  df <- flatten_list_columns(as.data.frame(x))
+  utils::write.table(df, file = path, sep = "\t",
                      quote = FALSE, row.names = FALSE, ...)
   log_ok("wrote ", path)
   invisible(path)
+}
+
+#' Coerce any list-type column of a data.frame to plain character.
+#'
+#' TCGAbiolinks' GDCprepare() sometimes returns colData with list columns -
+#' a case can have more than one recorded value for a field (e.g. several
+#' treatments), so it's stored as one list per sample. Harmless for
+#' Bioconductor objects, but base write.table() cannot serialise it
+#' ("unimplemented type 'list' in 'EncodeElement'"), and as.character() on a
+#' whole list column produces deparsed noise like 'c("a", "b")' rather than
+#' a readable value. This is the one place that gets called wherever GDC
+#' metadata is turned into a plain data.frame, so nothing downstream has to
+#' know or care that the column used to be a list.
+flatten_list_columns <- function(df) {
+  is_list_col <- vapply(df, is.list, logical(1))
+  if (!any(is_list_col)) return(df)
+  for (cc in names(df)[is_list_col]) {
+    df[[cc]] <- vapply(df[[cc]], function(v) {
+      if (is.null(v) || length(v) == 0 || all(is.na(v))) return(NA_character_)
+      paste(as.character(v), collapse = "; ")
+    }, character(1))
+  }
+  df
 }
 
 save_plot <- function(plot, path, width = 8, height = 6, dpi = 300) {

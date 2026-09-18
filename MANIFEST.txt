@@ -1,0 +1,13 @@
+id	filename	md5	size	state
+ba43705b-8a84-4b4c-8563-14a177c0f0c5	ba43705b-8a84-4b4c-8563-14a177c0f0c5/c441ca78-6116-41ec-b53e-9405cf5f5314.wxs.aliquot_ensemble_masked.maf.gz	28a89fc90c85a84a5d11499e4fc2dbde	21922	validated
+021c8733-078c-4064-9cb3-2a95b6c3fb0a	021c8733-078c-4064-9cb3-2a95b6c3fb0a/a8efe614-4878-4fda-8ee3-9fec95653a32.wxs.aliquot_ensemble_masked.maf.gz	c7c037d46b3d091af8a1d7a56c064eeb	15836	validated
+d5aa3502-5004-4302-8d42-95fd76586f1d	d5aa3502-5004-4302-8d42-95fd76586f1d/33df15c5-3123-415f-8360-c7b1c1d283d3.wxs.aliquot_ensemble_masked.maf.gz	b16a496fb4489c81a075e03d9c0bb71c	11379	validated
+01f09fd8-43b2-4e15-bb26-dce9553e500e	01f09fd8-43b2-4e15-bb26-dce9553e500e/892dfadc-829d-43e8-933b-bc96754aac1c.wxs.aliquot_ensemble_masked.maf.gz	01764f4dcebf0f2338e602be2178249c	14926	validated
+ba4e57dc-c15b-4282-90dd-e9ace6fb9d2b	ba4e57dc-c15b-4282-90dd-e9ace6fb9d2b/fc2a9d28-f6bd-4b6b-bcc2-05c1eaf56dca.wxs.aliquot_ensemble_masked.maf.gz	07767c5dd4afd12de73f2be91dfece78	15180	validated
+210e7086-8eee-4432-9c27-fb0470ba4237	210e7086-8eee-4432-9c27-fb0470ba4237/34b1c3b0-f973-46e1-bae8-dfa14c513b07.wxs.aliquot_ensemble_masked.maf.gz	a9ad5d993ef3b6590d41aa8091ffe083	136451	validated
+9a32d563-cd69-4ea5-9b50-c5556d6fda42	9a32d563-cd69-4ea5-9b50-c5556d6fda42/764de0ed-ea23-427a-9005-5c5fab299ecd.wxs.aliquot_ensemble_masked.maf.gz	0ac23f979f5fb914228290b88f3e267c	35385	validated
+8068a146-12a4-4cd0-aefa-cf02c7fbf54d	8068a146-12a4-4cd0-aefa-cf02c7fbf54d/c0d0c78d-0157-4b4f-80e0-b398c75ad18d.wxs.aliquot_ensemble_masked.maf.gz	3d16dd3b381d3e1669960eea1082fc8b	13763	validated
+a5b1ea4c-7ba6-43be-b978-04524c106610	a5b1ea4c-7ba6-43be-b978-04524c106610/59e6e69f-2d23-445f-a170-252f027e26e3.wxs.aliquot_ensemble_masked.maf.gz	f3ff8235be31b1036e03fda0d4a00d59	23736	validated
+ba114d36-576f-429d-b6c1-e19349e74d2c	ba114d36-576f-429d-b6c1-e19349e74d2c/999f0a32-30c2-466d-b3e4-6c0983ab248c.wxs.aliquot_ensemble_masked.maf.gz	e9cf2d8ff239121341fe6fb16d5d3da9	11720	validated
+6e6702e3-3950-4a23-a9c4-afefa989efed	6e6702e3-3950-4a23-a9c4-afefa989efed/4c0565cb-b76a-4945-96c7-da53c6fef61c.wxs.aliquot_ensemble_masked.maf.gz	ff924da565928df0fe2851add3db4f4e	41447	validated
+fb319d50-23ab-4c2b-9981-d296fdeeb983	fb319d50-23ab-4c2b-9981-d296fdeeb983/01d89297-2636-4115-bfcf-993e9523401e.wxs.aliquot_ensemble_masked.maf.gz	c07cfa6f73e03f48f92a8ddea4e72da7	19888	validated
