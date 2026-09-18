@@ -41,4 +41,12 @@ mutation:
   min_mut: 5
   compare_groups: true      # meaningful here: tumour vs tumour
 
+methylation:
+  platform: Illumina Human Methylation 450
+  drop_sex_chr: true
+  max_na_fraction: 0.1
+  p_adjust: 0.05
+  delta_beta: 0.2
+  top_n_heatmap: 50
+
 seed: 1234

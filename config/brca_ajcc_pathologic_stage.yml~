@@ -16,7 +16,7 @@ project: TCGA-BRCA
 omics:
   rnaseq: true
   mutation: true
-  methylation: false
+  methylation: true
 
 cohort:
   group_by: ajcc_pathologic_stage 

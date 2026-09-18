@@ -48,7 +48,6 @@ dependencies:
   - bioconductor-limma
   - bioconductor-maftools
   - bioconductor-sesamedata
-  - bioconductor-sva
 
   # --- optional: functional enrichment --------------------------------------
   # Comment these two out for a much faster solve if you do not need
