@@ -24,6 +24,76 @@ fetch_omic <- function(cfg, omic, force = FALSE, files_per_chunk = 20) {
   q <- build_query(cfg$project, omic)
   if (is.null(q)) return(NULL)
 
+  ## TCGAbiolinks needs a SeSAMe manifest to construct the methylation
+  ## SummarizedExperiment. Use a project-local ExperimentHub cache so a broken
+  ## or concurrently modified user-wide cache cannot block the workflow.
+  if (identical(omic, "methylation")) {
+    need_pkg("sesame")
+    need_pkg("sesameData")
+    need_pkg("ExperimentHub")
+    need_pkg("AnnotationHub")
+
+    hub_cache <- ensure_dir(file.path(cfg$cache_dir, "ExperimentHub"))
+    Sys.setenv(EXPERIMENT_HUB_CACHE = hub_cache)
+    ExperimentHub::setExperimentHubOption("CACHE", hub_cache)
+
+    manifest <- switch(
+      cfg$methylation$platform,
+      "Illumina Human Methylation 450" = "HM450.hg38.manifest",
+      "Illumina Human Methylation 27"  = "HM27.hg38.manifest",
+      "Illumina Methylation Epic"      = "EPIC.hg38.manifest",
+      log_die("unsupported methylation platform: ", cfg$methylation$platform)
+    )
+
+    log_msg("using project-specific ExperimentHub cache: ", hub_cache)
+    log_msg("checking SeSAMe annotation: ", manifest)
+
+    ## Query ExperimentHub directly. This works with both older and newer
+    ## sesameData releases; older releases expose sesameDataCache() without a
+    ## resource-name argument.
+    annotation_ok <- try({
+      eh <- ExperimentHub::ExperimentHub()
+      hits <- AnnotationHub::query(eh, c("sesameData", manifest))
+      hits <- hits[hits$title == manifest, ]
+
+      if (length(hits) == 0L) {
+        stop("annotation was not found in ExperimentHub: ", manifest)
+      }
+
+      resource_dates <- as.Date(hits$rdatadateadded)
+      if (all(is.na(resource_dates))) {
+        stop("ExperimentHub returned no valid resource date for ", manifest)
+      }
+
+      latest_date <- max(resource_dates, na.rm = TRUE)
+      resource_ids <- hits$ah_id[!is.na(resource_dates) & resource_dates == latest_date]
+      resource_id <- utils::tail(resource_ids, 1L)
+
+      if (length(resource_id) != 1L || is.na(resource_id) || !nzchar(resource_id)) {
+        stop("could not identify the latest ExperimentHub resource for ", manifest)
+      }
+
+      annotation_object <- eh[[resource_id]]
+      if (is.null(annotation_object)) {
+        stop("ExperimentHub returned an empty object for ", manifest)
+      }
+      TRUE
+    }, silent = TRUE)
+
+    if (inherits(annotation_ok, "try-error") || !isTRUE(annotation_ok)) {
+      log_die(
+        "failed to prepare SeSAMe annotation ", manifest, ": ",
+        if (inherits(annotation_ok, "try-error")) {
+          as.character(annotation_ok)
+        } else {
+          "ExperimentHub annotation loading returned FALSE"
+        }
+      )
+    }
+
+    log_ok("SeSAMe annotation ready: ", manifest)
+  }
+
   gdc_dir <- ensure_dir(file.path(cfg$cache_dir, "GDCdata"))
   ok <- try(TCGAbiolinks::GDCdownload(q, method = "api",
                                       files.per.chunk = files_per_chunk,
