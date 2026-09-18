@@ -236,7 +236,7 @@ explore_project <- function(cfg, avail = NULL, se = NULL, sample_annotation = NU
     ## cross-tab of every profiled variable against tissue class
     xt <- do.call(rbind, lapply(clinical_vars, function(c) {
       if (!c %in% names(cd)) return(NULL)
-      t <- as.data.frame(table(variable = rep(c, nrow(cd)), level = as.character(cd[[c]]),
+      t <- as.data.frame(table(variable = c, level = as.character(cd[[c]]),
                                tissue = as.character(cd$tissue_class)))
       t[t$Freq > 0, ]
     }))
