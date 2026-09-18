@@ -170,27 +170,11 @@ fetch_clinical <- function(cfg, force = FALSE) {
 #' contrast actually needs - stage, gender, age, vital status - without the
 #' sub-tables whose row-count mismatch usually breaks the combined query.
 fetch_clinical_patient_only <- function(cfg) {
-  q <- TCGAbiolinks::GDCquery(
-    project = cfg$project,
-    data.category = "Clinical",
-    data.type = "Clinical Supplement",
-    data.format = "BCR XML"
-  )
-
+  q <- TCGAbiolinks::GDCquery(project = cfg$project, data.category = "Clinical",
+                              data.type = "Clinical Supplement", data.format = "BCR XML")
   gdc_dir <- ensure_dir(file.path(cfg$cache_dir, "GDCdata"))
-
-  TCGAbiolinks::GDCdownload(
-    q,
-    method = "api",
-    files.per.chunk = 20,
-    directory = gdc_dir
-  )
-
-  TCGAbiolinks::GDCprepare_clinic(
-    q,
-    clinical.info = "patient",
-    directory = gdc_dir
-  )
+  TCGAbiolinks::GDCdownload(q, directory = gdc_dir)
+  TCGAbiolinks::GDCprepare_clinic(q, clinical.info = "patient", directory = gdc_dir)
 }
 
 #' Published molecular subtypes curated by TCGAbiolinks (PAM50, CMS, ...).

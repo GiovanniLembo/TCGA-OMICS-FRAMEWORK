@@ -1,0 +1,44 @@
+# ---------------------------------------------------------------------------
+# TCGA-BRCA: Basal-like vs Luminal A, using the curated PAM50 calls that
+# TCGAquery_subtype() attaches (prefixed subtype_ by this framework).
+#
+# This is the more interesting kind of contrast: both arms are tumours, so the
+# mutation comparison is meaningful (mafCompare will recover TP53 and PIK3CA
+# going in opposite directions).
+#
+# Tip: run scripts/00_explore_projects.R first, then look at
+#      results/.../tables/sample_annotation.tsv to find the exact column name
+#      and the exact spelling of the levels.
+# ---------------------------------------------------------------------------
+
+project: TCGA-BRCA
+
+omics:
+  rnaseq: true
+  mutation: true
+  methylation: false
+
+cohort:
+  group_by: ajcc_pathologic_stage 
+  treatment: Stage IIIA
+  reference: Stage IA
+  paired: false
+  min_group_n: 10
+  filters:
+    tissue_class: [tumor]   # never mix normals into a subtype contrast
+
+deseq2:
+  assay: unstranded
+  min_count: 10
+  protein_coding_only: true
+  alpha: 0.05
+  lfc_threshold: 1
+  shrink: true
+  run_enrichment: true
+
+mutation:
+  top_genes: 30
+  min_mut: 5
+  compare_groups: true      # meaningful here: tumour vs tumour
+
+seed: 1234
